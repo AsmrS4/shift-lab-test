@@ -1,0 +1,29 @@
+version: '3.8'
+
+services:
+  crm-database:
+    image: postgres:15
+    container_name: crm_db
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=crm_db
+    volumes:
+      - crm_data:/var/lib/postgresql/data
+    ports:
+      - "5442:5432"
+    networks:
+      - app-network
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+volumes:
+  crm_data:
+
+networks:
+  app-network:
+    driver: bridge
