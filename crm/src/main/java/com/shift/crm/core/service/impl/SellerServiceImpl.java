@@ -5,7 +5,7 @@ import com.shift.crm.api.models.requests.PaginationParams;
 import com.shift.crm.api.models.requests.UpdateSellerRequest;
 import com.shift.crm.core.exceptions.BadRequestException;
 import com.shift.crm.core.exceptions.constants.ExceptionMessages;
-import com.shift.crm.core.persistence.enities.Seller;
+import com.shift.crm.core.persistence.entities.Seller;
 import com.shift.crm.core.persistence.repositories.SellerRepository;
 import com.shift.crm.core.service.SellerService;
 import lombok.RequiredArgsConstructor;

@@ -2,7 +2,7 @@ package com.shift.crm.core.service;
 
 import com.shift.crm.api.models.requests.CreateTransaction;
 import com.shift.crm.api.models.requests.PaginationParams;
-import com.shift.crm.core.persistence.enities.Transaction;
+import com.shift.crm.core.persistence.entities.Transaction;
 import org.springframework.data.domain.Page;
 
 public interface TransactionService {

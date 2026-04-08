@@ -5,7 +5,7 @@ import com.shift.crm.api.models.requests.CreateTransaction;
 import com.shift.crm.api.models.requests.PaginationParams;
 import com.shift.crm.api.models.responses.TransactionResponse;
 import com.shift.crm.api.models.responses.Transactions;
-import com.shift.crm.core.persistence.enities.Transaction;
+import com.shift.crm.core.persistence.entities.Transaction;
 import com.shift.crm.core.service.TransactionService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;

@@ -14,4 +14,6 @@ public class ErrorConstants {
     public static final String NOT_BLANK_MSG = "Поле обязательно к заполнению";
     public static final String AVAILABLE_NAME_PARAMETER_SIZE = "Допустимая длина параметра \"name\": от 3 до 100 символов";
     public static final String AVAILABLE_CONTACT_INFO_PARAMETER_SIZE = "Допустимая длина параметра \"contactInfo\": от 3 до 100 символов";
+    public static final String INVALID_PERIOD_PARAMS = "Параметр dateFrom не может быть позднее параметра dateTo";
+    public static final String NULL_PERIOD_PARAMS = "Параметры dateFrom и dateTo обязательны к заполнению.";
 }
