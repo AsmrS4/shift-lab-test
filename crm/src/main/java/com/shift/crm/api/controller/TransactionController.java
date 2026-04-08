@@ -3,7 +3,6 @@ package com.shift.crm.api.controller;
 import com.shift.crm.api.mappers.Mapper;
 import com.shift.crm.api.models.requests.CreateTransaction;
 import com.shift.crm.api.models.requests.PaginationParams;
-import com.shift.crm.api.models.responses.SellerTransactions;
 import com.shift.crm.api.models.responses.TransactionResponse;
 import com.shift.crm.api.models.responses.Transactions;
 import com.shift.crm.core.persistence.enities.Transaction;
@@ -46,7 +45,8 @@ public class TransactionController {
 
     @GetMapping("/seller/{sellerId}")
     @ResponseStatus(HttpStatus.OK)
-    public SellerTransactions retrieveSellerTransactions(@PathVariable("sellerId") Long sellerId, @ParameterObject @Valid PaginationParams params) {
-        return null;
+    public Transactions retrieveSellerTransactions(@PathVariable("sellerId") Long sellerId, @ParameterObject @Valid PaginationParams params) {
+        Page<Transaction> transactionPage = service.retrieveSellerTransactions(sellerId, params);
+        return mapper.mapToList(transactionPage);
     }
 }

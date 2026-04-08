@@ -1,7 +1,6 @@
 package com.shift.crm.api.controller;
 
 import com.shift.crm.api.mappers.Mapper;
-import com.shift.crm.api.mappers.SellerMapper;
 import com.shift.crm.api.models.requests.CreateSellerRequest;
 import com.shift.crm.api.models.requests.PaginationParams;
 import com.shift.crm.api.models.requests.UpdateSellerRequest;
