@@ -38,14 +38,14 @@ public class SellerController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public SellerResponse createSeller(@RequestBody CreateSellerRequest createRequest) {
+    public SellerResponse createSeller(@RequestBody @Valid CreateSellerRequest createRequest) {
         Seller createdSeller = service.createSeller(createRequest);
         return mapper.mapToResponse(createdSeller);
     }
 
     @PutMapping("/{id}")
     @ResponseStatus(HttpStatus.OK)
-    public SellerResponse updateSellerInfo(@PathVariable Long id, @RequestBody UpdateSellerRequest updateRequest) {
+    public SellerResponse updateSellerInfo(@PathVariable Long id, @RequestBody @Valid UpdateSellerRequest updateRequest) {
         Seller updatedSeller = service.updateSeller(id, updateRequest);
         return mapper.mapToResponse(updatedSeller);
     }
