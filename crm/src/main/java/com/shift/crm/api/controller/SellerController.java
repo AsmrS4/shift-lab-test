@@ -1,6 +1,6 @@
 package com.shift.crm.api.controller;
 
-import com.shift.crm.api.mappers.SellerMapper;
+import com.shift.crm.api.mappers.Mapper;
 import com.shift.crm.api.models.requests.CreateSellerRequest;
 import com.shift.crm.api.models.requests.PaginationParams;
 import com.shift.crm.api.models.requests.UpdateSellerRequest;
@@ -20,13 +20,13 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 public class SellerController {
     private final SellerService service;
-    private final SellerMapper mapper;
+    private final Mapper<Seller, SellerResponse, Sellers> mapper;
 
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
     public Sellers retrieveSellers(@ParameterObject @Valid PaginationParams params) {
         Page<Seller> sellers = service.retrieveAll(params);
-        return mapper.mapToSellers(sellers);
+        return mapper.mapToList(sellers);
     }
 
     @GetMapping("/{id}")
@@ -38,14 +38,14 @@ public class SellerController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public SellerResponse createSeller(@RequestBody CreateSellerRequest createRequest) {
+    public SellerResponse createSeller(@RequestBody @Valid CreateSellerRequest createRequest) {
         Seller createdSeller = service.createSeller(createRequest);
         return mapper.mapToResponse(createdSeller);
     }
 
     @PutMapping("/{id}")
     @ResponseStatus(HttpStatus.OK)
-    public SellerResponse updateSellerInfo(@PathVariable Long id, @RequestBody UpdateSellerRequest updateRequest) {
+    public SellerResponse updateSellerInfo(@PathVariable Long id, @RequestBody @Valid UpdateSellerRequest updateRequest) {
         Seller updatedSeller = service.updateSeller(id, updateRequest);
         return mapper.mapToResponse(updatedSeller);
     }
