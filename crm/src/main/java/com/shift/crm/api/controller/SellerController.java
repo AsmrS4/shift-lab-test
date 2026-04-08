@@ -3,7 +3,6 @@ package com.shift.crm.api.controller;
 import com.shift.crm.api.models.requests.CreateSellerRequest;
 import com.shift.crm.api.models.requests.UpdateSellerRequest;
 import com.shift.crm.api.models.responses.SellerResponse;
-import com.shift.crm.api.models.responses.UpdateEntityResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -35,7 +34,7 @@ public class SellerController {
 
     @PutMapping("/{id}")
     @ResponseStatus(HttpStatus.OK)
-    public UpdateEntityResponse updateSellerInfo(@PathVariable Long id, @RequestBody UpdateSellerRequest updateRequest) {
+    public SellerResponse updateSellerInfo(@PathVariable Long id, @RequestBody UpdateSellerRequest updateRequest) {
         return null;
     }
 
