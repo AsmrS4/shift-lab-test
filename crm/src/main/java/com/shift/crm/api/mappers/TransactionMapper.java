@@ -1,20 +1,36 @@
 package com.shift.crm.api.mappers;
 
+import com.shift.crm.api.models.enums.PaymentType;
+import com.shift.crm.api.models.responses.Pagination;
+import com.shift.crm.api.models.responses.SellerShort;
 import com.shift.crm.api.models.responses.TransactionResponse;
 import com.shift.crm.api.models.responses.Transactions;
+import com.shift.crm.core.persistence.enities.Seller;
 import com.shift.crm.core.persistence.enities.Transaction;
-import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
+
 @Component
-public class TransactionMapper implements Mapper<Transaction, TransactionResponse, Transactions>{
+public class TransactionMapper extends Mapper<Transaction, TransactionResponse, Transactions>{
     @Override
     public TransactionResponse mapToResponse(Transaction entity) {
-        return null;
+        PaymentType type = PaymentType.valueOf(entity.getPaymentType().name());
+        return new TransactionResponse(
+                entity.getId(),
+                entity.getAmount(),
+                type,
+                entity.getTransactionDate(),
+                mapToShort(entity.getSeller())
+        );
     }
 
     @Override
-    public Transactions mapToList(Page<Transaction> entityPage) {
-        return null;
+    protected Transactions createResponse(List<TransactionResponse> records, Pagination pagination) {
+        return new Transactions(records, pagination);
+    }
+
+    private SellerShort mapToShort(Seller seller) {
+        return new SellerShort(seller.getId(), seller.getName());
     }
 }
