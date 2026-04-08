@@ -1,4 +1,4 @@
-package com.shift.crm.core.service;
+package com.shift.crm.core.service.impl;
 
 import com.shift.crm.api.models.requests.CreateSellerRequest;
 import com.shift.crm.api.models.requests.PaginationParams;
@@ -7,6 +7,7 @@ import com.shift.crm.core.exceptions.BadRequestException;
 import com.shift.crm.core.exceptions.constants.ExceptionMessages;
 import com.shift.crm.core.persistence.enities.Seller;
 import com.shift.crm.core.persistence.repositories.SellerRepository;
+import com.shift.crm.core.service.SellerService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -18,7 +19,7 @@ import java.util.NoSuchElementException;
 
 @Service
 @RequiredArgsConstructor
-public class SellerServiceImpl implements SellerService{
+public class SellerServiceImpl implements SellerService {
     private final SellerRepository repository;
 
     @Override

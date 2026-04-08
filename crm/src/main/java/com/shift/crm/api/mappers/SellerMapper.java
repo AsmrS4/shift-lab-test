@@ -10,7 +10,8 @@ import org.springframework.stereotype.Component;
 import java.util.List;
 
 @Component
-public class SellerMapper {
+public class SellerMapper implements Mapper<Seller, SellerResponse, Sellers>{
+    @Override
     public SellerResponse mapToResponse(Seller seller) {
         return new SellerResponse(
                 seller.getId(),
@@ -21,7 +22,8 @@ public class SellerMapper {
         );
     }
 
-    public Sellers mapToSellers(Page<Seller> sellerPage) {
+    @Override
+    public Sellers mapToList(Page<Seller> sellerPage) {
         List<Seller> sellersRaw = sellerPage.getContent();
         List<SellerResponse> sellers = sellersRaw.stream().map(this::mapToResponse).toList();
 

@@ -1,5 +1,6 @@
 package com.shift.crm.api.controller;
 
+import com.shift.crm.api.mappers.Mapper;
 import com.shift.crm.api.mappers.SellerMapper;
 import com.shift.crm.api.models.requests.CreateSellerRequest;
 import com.shift.crm.api.models.requests.PaginationParams;
@@ -20,13 +21,13 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 public class SellerController {
     private final SellerService service;
-    private final SellerMapper mapper;
+    private final Mapper<Seller, SellerResponse, Sellers> mapper;
 
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
     public Sellers retrieveSellers(@ParameterObject @Valid PaginationParams params) {
         Page<Seller> sellers = service.retrieveAll(params);
-        return mapper.mapToSellers(sellers);
+        return mapper.mapToList(sellers);
     }
 
     @GetMapping("/{id}")
