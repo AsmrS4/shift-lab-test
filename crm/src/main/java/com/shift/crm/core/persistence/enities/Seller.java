@@ -27,7 +27,7 @@ public class Seller {
     private LocalDateTime registrationDate;
     @UpdateTimestamp
     private LocalDateTime modifiedAt;
-    private boolean isActive;
+    private boolean isActive = true;
     @OneToMany(mappedBy = "seller", cascade = CascadeType.ALL)
     private List<Transaction> transactions = new ArrayList<>();
 }
