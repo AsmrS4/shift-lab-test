@@ -2,12 +2,15 @@ package com.shift.crm.core.service.impl;
 
 import com.shift.crm.api.models.requests.CreateTransaction;
 import com.shift.crm.api.models.requests.PaginationParams;
+import com.shift.crm.api.models.requests.Period;
 import com.shift.crm.core.exceptions.constants.ExceptionMessages;
-import com.shift.crm.core.persistence.enities.Seller;
-import com.shift.crm.core.persistence.enities.Transaction;
+import com.shift.crm.core.persistence.entities.Seller;
+import com.shift.crm.core.persistence.entities.SellerStatistic;
+import com.shift.crm.core.persistence.entities.Transaction;
 import com.shift.crm.core.persistence.enums.PaymentType;
 import com.shift.crm.core.persistence.repositories.TransactionRepository;
 import com.shift.crm.core.service.SellerService;
+import com.shift.crm.core.service.StatisticService;
 import com.shift.crm.core.service.TransactionService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -17,11 +20,12 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.NoSuchElementException;
 
 @Service
 @RequiredArgsConstructor
-public class TransactionImpl implements TransactionService {
+public class TransactionImpl implements TransactionService, StatisticService<SellerStatistic> {
 
     private final TransactionRepository repository;
     private final SellerService sellerService;
@@ -72,5 +76,20 @@ public class TransactionImpl implements TransactionService {
         newTransaction.setSeller(seller);
 
         return newTransaction;
+    }
+
+    @Override
+    public SellerStatistic findMostProductiveByPeriod(Period period) {
+        List<SellerStatistic> sellerStatistics = repository.findMostProductive(period.getDateFrom(), period.getDateTo());
+        if(sellerStatistics.isEmpty()) {
+            return new SellerStatistic(null, 0L);
+        }
+        return sellerStatistics.getFirst();
+    }
+
+    @Override
+    public Page<SellerStatistic> findUnProductiveByPeriodAndAmount(Period period, Long amount, PaginationParams params) {
+        Pageable pageable = PageRequest.of(params.getPage(), params.getSize());
+        return repository.findAllNonProductive(period.getDateFrom(), period.getDateTo(), amount, pageable);
     }
 }

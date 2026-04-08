@@ -5,8 +5,8 @@ import com.shift.crm.api.models.responses.Pagination;
 import com.shift.crm.api.models.responses.SellerShort;
 import com.shift.crm.api.models.responses.TransactionResponse;
 import com.shift.crm.api.models.responses.Transactions;
-import com.shift.crm.core.persistence.enities.Seller;
-import com.shift.crm.core.persistence.enities.Transaction;
+import com.shift.crm.core.persistence.entities.Seller;
+import com.shift.crm.core.persistence.entities.Transaction;
 import org.springframework.stereotype.Component;
 
 import java.util.List;

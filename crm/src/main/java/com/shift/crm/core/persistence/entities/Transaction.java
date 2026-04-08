@@ -1,4 +1,4 @@
-package com.shift.crm.core.persistence.enities;
+package com.shift.crm.core.persistence.entities;
 
 import com.shift.crm.core.persistence.enums.PaymentType;
 import jakarta.persistence.*;

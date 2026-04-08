@@ -1,4 +1,4 @@
-package com.shift.crm.core.persistence.enities;
+package com.shift.crm.core.persistence.entities;
 
 import jakarta.persistence.*;
 import lombok.Getter;

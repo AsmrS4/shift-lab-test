@@ -3,7 +3,7 @@ package com.shift.crm.api.mappers;
 import com.shift.crm.api.models.responses.Pagination;
 import com.shift.crm.api.models.responses.SellerResponse;
 import com.shift.crm.api.models.responses.Sellers;
-import com.shift.crm.core.persistence.enities.Seller;
+import com.shift.crm.core.persistence.entities.Seller;
 import org.springframework.stereotype.Component;
 
 import java.util.List;

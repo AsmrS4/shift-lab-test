@@ -6,7 +6,7 @@ import com.shift.crm.api.models.requests.PaginationParams;
 import com.shift.crm.api.models.requests.UpdateSellerRequest;
 import com.shift.crm.api.models.responses.SellerResponse;
 import com.shift.crm.api.models.responses.Sellers;
-import com.shift.crm.core.persistence.enities.Seller;
+import com.shift.crm.core.persistence.entities.Seller;
 import com.shift.crm.core.service.SellerService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
