@@ -12,11 +12,10 @@ import com.shift.crm.core.persistence.repositories.TransactionRepository;
 import com.shift.crm.core.service.SellerService;
 import com.shift.crm.core.service.StatisticService;
 import com.shift.crm.core.service.TransactionService;
+import com.shift.crm.core.utils.PageableConverter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -46,14 +45,14 @@ public class TransactionImpl implements TransactionService, StatisticService<Sel
 
     @Override
     public Page<Transaction> retrieveTransactions(PaginationParams params) {
-        Pageable pageable = PageRequest.of(params.getPage(), params.getSize(), Sort.by("transactionDate").descending());
+        Pageable pageable = PageableConverter.toPageableWithSortDesc(params, "transactionDate");
         return repository.findAll(pageable);
     }
 
     @Override
     public Page<Transaction> retrieveSellerTransactions(Long sellerId, PaginationParams params) {
         Seller seller = sellerService.retrieveSellerDetails(sellerId);
-        Pageable pageable = PageRequest.of(params.getPage(), params.getSize(), Sort.by("transactionDate").descending());
+        Pageable pageable = PageableConverter.toPageableWithSortDesc(params, "transactionDate");
         return repository.findTransactionBySeller(seller.getId(), pageable);
     }
 
@@ -89,7 +88,7 @@ public class TransactionImpl implements TransactionService, StatisticService<Sel
 
     @Override
     public Page<SellerStatistic> findUnProductiveByPeriodAndAmount(Period period, Long amount, PaginationParams params) {
-        Pageable pageable = PageRequest.of(params.getPage(), params.getSize());
+        Pageable pageable = PageableConverter.toPageable(params);
         return repository.findAllNonProductive(period.getDateFrom(), period.getDateTo(), amount, pageable);
     }
 }

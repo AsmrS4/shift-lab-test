@@ -8,11 +8,10 @@ import com.shift.crm.core.exceptions.constants.ExceptionMessages;
 import com.shift.crm.core.persistence.entities.Seller;
 import com.shift.crm.core.persistence.repositories.SellerRepository;
 import com.shift.crm.core.service.SellerService;
+import com.shift.crm.core.utils.PageableConverter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.NoSuchElementException;
@@ -66,7 +65,7 @@ public class SellerServiceImpl implements SellerService {
 
     @Override
     public Page<Seller> retrieveAll(PaginationParams params) {
-        Pageable pageable = PageRequest.of(params.getPage(), params.getSize(), Sort.by("name").ascending());
+        Pageable pageable = PageableConverter.toPageableWithSortAsc(params, "name");
         return repository.findAllActive(pageable);
     }
 
