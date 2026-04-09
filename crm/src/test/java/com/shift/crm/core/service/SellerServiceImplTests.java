@@ -226,7 +226,7 @@ public class SellerServiceImplTests {
     }
 
     @Test
-    void deleteSeller_WhenSellerExistsAndActive_ShouldNotCallDelete() {
+    public void deleteSeller_WhenSellerExistsAndActive_ShouldNotCallDelete() {
         when(repository.existsById(MOCKED_ID)).thenReturn(true);
         when(repository.isActive(MOCKED_ID)).thenReturn(true);
         when(repository.getReferenceById(MOCKED_ID)).thenReturn(seller);
@@ -239,7 +239,7 @@ public class SellerServiceImplTests {
     }
 
     @Test
-    void deleteSeller_WhenSellerExistsAndActive_ShouldSetActiveToFalse() {
+    public void deleteSeller_WhenSellerExistsAndActive_ShouldSetActiveToFalse() {
         when(repository.existsById(MOCKED_ID)).thenReturn(true);
         when(repository.isActive(MOCKED_ID)).thenReturn(true);
         when(repository.getReferenceById(MOCKED_ID)).thenReturn(seller);
@@ -256,7 +256,7 @@ public class SellerServiceImplTests {
     }
 
     @Test
-    void deleteSeller_WhenSellerDoesNotExist_ShouldThrowNoSuchElementException() {
+    public void deleteSeller_WhenSellerDoesNotExist_ShouldThrowNoSuchElementException() {
         when(repository.existsById(MOCKED_ID)).thenReturn(false);
 
         assertThatThrownBy(() -> service.deleteSeller(MOCKED_ID))
@@ -282,7 +282,7 @@ public class SellerServiceImplTests {
     }
 
     @Test
-    void retrieveAll_ShouldReturnPageOfActiveSellers() {
+    public void retrieveAll_ShouldReturnPageOfActiveSellers() {
         Pageable expectedPageable = mock(Pageable.class);
         Page<Seller> expectedPage = new PageImpl<>(Collections.singletonList(seller));
         final String ORDER_BY = "name";
