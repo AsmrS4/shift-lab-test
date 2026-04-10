@@ -1,0 +1,572 @@
+openapi: 3.0.1
+info:
+  title: CRM Transaction Management API
+  description: API для управления транзакциями в CRM системе. Позволяет создавать транзакции для продавцов, получать детали транзакций и списки транзакций с поддержкой пагинации.
+  version: 1.0.0
+
+servers:
+  - url: http://localhost:9000/api
+    description: хост для локальной разработки
+
+tags:
+  - name: Transactions
+    description: Операции с транзакциями
+
+paths:
+  /transactions:
+    get:
+      tags:
+        - Transactions
+      summary: Получение списка всех транзакций
+      description: Возвращает страницу со всеми транзакциями с поддержкой пагинации
+      operationId: retrieveTransactions
+      parameters:
+        - name: page
+          in: query
+          description: Номер страницы (начиная с 0)
+          required: false
+          schema:
+            type: integer
+            minimum: 0
+            maximum: 268435455
+            default: 0
+            example: 0
+        - name: size
+          in: query
+          description: Количество элементов на странице
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 268435455
+            default: 5
+            example: 5
+      responses:
+        '200':
+          description: Успешный ответ со списком транзакций
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Transactions'
+              examples:
+                успешный-ответ:
+                  value:
+                    transactions:
+                      - id: 1001
+                        amount: 150000
+                        paymentType: "CARD"
+                        transactionDate: "2024-01-15T10:35:00"
+                        producer:
+                          id: 1
+                          name: "Иван Петров"
+                      - id: 1002
+                        amount: 250000
+                        paymentType: "TRANSFER"
+                        transactionDate: "2024-01-16T14:20:00"
+                        producer:
+                          id: 2
+                          name: "Елена Смирнова"
+                    pagination:
+                      page: 0
+                      size: 5
+                      count: 3
+        '400':
+          description: Неверные параметры запроса
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                message: "Параметр page должен быть неотрицательным"
+                timestamp: "2024-01-15T10:30:00"
+        '500':
+          description: Ошибка сервера
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /transactions/{id}:
+    get:
+      tags:
+        - Transactions
+      summary: Получение деталей транзакции
+      description: Возвращает подробную информацию о транзакции по её ID
+      operationId: retrieveTransactionDetails
+      parameters:
+        - name: id
+          in: path
+          description: Уникальный идентификатор транзакции
+          required: true
+          schema:
+            type: integer
+            format: int64
+            minimum: 1
+            example: 1001
+      responses:
+        '200':
+          description: Успешный ответ с деталями транзакции
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TransactionResponse'
+              examples:
+                транзакция-с-картой:
+                  value:
+                    id: 1001
+                    amount: 150000
+                    paymentType: "CARD"
+                    transactionDate: "2024-01-15T10:35:00"
+                    producer:
+                      id: 1
+                      name: "Иван Петров"
+                транзакция-с-переводом:
+                  value:
+                    id: 1002
+                    amount: 250000
+                    paymentType: "TRANSFER"
+                    transactionDate: "2024-01-16T14:20:00"
+                    producer:
+                      id: 2
+                      name: "Елена Смирнова"
+                транзакция-с-наличными:
+                  value:
+                    id: 1003
+                    amount: 50000
+                    paymentType: "CASH"
+                    transactionDate: "2024-01-17T09:15:00"
+                    producer:
+                      id: 3
+                      name: "Алексей Козлов"
+        '400':
+          description: Ошибка со стороны клиента
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                message: "ID должен быть положительным числом"
+                timestamp: "2024-01-15T10:30:00"
+        '404':
+          description: Транзакция не найдена
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                message: "Transaction not found"
+                timestamp: "2024-01-15T10:30:00"
+        '500':
+          description: Ошибка сервера
+
+  /transactions/seller/{sellerId}:
+    get:
+      tags:
+        - Transactions
+      summary: Получение транзакций продавца
+      description: Возвращает список всех транзакций для указанного продавца с поддержкой пагинации
+      operationId: retrieveSellerTransactions
+      parameters:
+        - name: sellerId
+          in: path
+          description: Уникальный идентификатор продавца
+          required: true
+          schema:
+            type: integer
+            format: int64
+            minimum: 1
+            example: 1
+        - name: page
+          in: query
+          description: Номер страницы (начиная с 0)
+          required: false
+          schema:
+            type: integer
+            minimum: 0
+            maximum: 268435455
+            default: 0
+            example: 0
+        - name: size
+          in: query
+          description: Количество элементов на странице
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 268435455
+            default: 5
+            example: 5
+      responses:
+        '200':
+          description: Успешный ответ со списком транзакций продавца
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Transactions'
+              examples:
+                продавец-с-транзакциями:
+                  value:
+                    transactions:
+                      - id: 1001
+                        amount: 150000
+                        paymentType: "CARD"
+                        transactionDate: "2024-01-15T10:35:00"
+                        producer:
+                          id: 1
+                          name: "Иван Петров"
+                      - id: 1005
+                        amount: 75000
+                        paymentType: "CASH"
+                        transactionDate: "2024-01-20T11:00:00"
+                        producer:
+                          id: 1
+                          name: "Иван Петров"
+                    pagination:
+                      page: 0
+                      size: 5
+                      count: 3
+                продавец-без-транзакций:
+                  value:
+                    transactions: []
+                    pagination:
+                      page: 0
+                      size: 5
+                      count: 0
+        '400':
+          description: Ошибка со стороны клиента
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Продавец не найден
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                message: "Seller not found"
+                timestamp: "2024-01-15T10:30:00"
+        '500':
+          description: Ошибка сервера
+
+  /transactions/seller/{sellerId}/create:
+    post:
+      tags:
+        - Transactions
+      summary: Создание транзакции для продавца
+      description: Создает новую транзакцию для указанного продавца
+      operationId: createTransaction
+      parameters:
+        - name: sellerId
+          in: path
+          description: Уникальный идентификатор продавца
+          required: true
+          schema:
+            type: integer
+            format: int64
+            minimum: 1
+            example: 1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateTransaction'
+            examples:
+              value:
+                amount: 150000
+                paymentType: "CARD"
+      responses:
+        '201':
+          description: Транзакция успешно создана
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TransactionResponse'
+              examples:
+                созданная-транзакция:
+                  value:
+                    id: 1001
+                    amount: 150000
+                    paymentType: "CARD"
+                    transactionDate: "2024-01-15T10:35:00"
+                    producer:
+                      id: 1
+                      name: "Иван Петров"
+        '400':
+          description: Ошибка со стороны клиента
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                неверная-сумма-отрицательная:
+                  value:
+                    message: "Сумма должна быть положительным числом"
+                    timestamp: "2024-01-15T10:30:00"
+                отсутствует-тип-платежа:
+                  value:
+                    message: "Тип платежа не может быть пустым"
+                    timestamp: "2024-01-15T10:30:00"
+        '404':
+          description: Продавец не найден
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                message: "Seller not found"
+                timestamp: "2024-01-15T10:30:00"
+        '500':
+          description: Ошибка сервера
+
+components:
+  schemas:
+    TransactionResponse:
+      type: object
+      description: Объект ответа с данными транзакции
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: Уникальный идентификатор транзакции
+          example: 1001
+          readOnly: true
+        amount:
+          type: integer
+          format: int64
+          description: Сумма транзакции
+          minimum: 1
+          maximum: 9223372036854775807
+          example: 150000
+        paymentType:
+          $ref: '#/components/schemas/PaymentType'
+        transactionDate:
+          type: string
+          format: date-time
+          description: Дата и время совершения транзакции
+          example: "2024-01-15T10:35:00"
+          readOnly: true
+        producer:
+          $ref: '#/components/schemas/SellerShort'
+      required:
+        - id
+        - amount
+        - paymentType
+        - transactionDate
+        - producer
+
+    Transactions:
+      type: object
+      description: Объект ответа со списком транзакций и пагинацией
+      properties:
+        transactions:
+          type: array
+          description: Список транзакций
+          items:
+            $ref: '#/components/schemas/TransactionResponse'
+        pagination:
+          $ref: '#/components/schemas/Pagination'
+      required:
+        - transactions
+        - pagination
+
+    CreateTransaction:
+      type: object
+      description: Запрос на создание новой транзакции
+      properties:
+        amount:
+          type: integer
+          format: int64
+          description: Сумма транзакции(положительное число)
+          minimum: 1
+          maximum: 9223372036854775807
+          example: 150000
+        paymentType:
+          $ref: '#/components/schemas/PaymentType'
+      required:
+        - amount
+        - paymentType
+
+    SellerShort:
+      type: object
+      description: Краткая информация о продавце
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: Уникальный идентификатор продавца
+          example: 1
+        name:
+          type: string
+          description: Имя продавца
+          minLength: 3
+          maxLength: 100
+          example: "Иван Петров"
+      required:
+        - id
+        - name
+
+    PaymentType:
+      type: string
+      description: Тип платежа
+      enum:
+        - CASH
+        - CARD
+        - TRANSFER
+      example: "CARD"
+
+    Pagination:
+      type: object
+      description: Информация о пагинации
+      properties:
+        page:
+          type: integer
+          description: Текущий номер страницы
+          minimum: 0
+          example: 0
+        size:
+          type: integer
+          description: Количество элементов на странице
+          minimum: 1
+          example: 5
+        count:
+          type: integer
+          description: Общее количество страниц
+          example: 3
+      required:
+        - page
+        - size
+        - count
+
+    ErrorResponse:
+      type: object
+      description: Объект ответа с ошибкой
+      properties:
+        message:
+          type: string
+          description: Текст ошибки
+          example: "Transaction not found"
+        timestamp:
+          type: string
+          format: date-time
+          description: Время возникновения ошибки
+          example: "2024-01-15T10:30:00"
+      required:
+        - message
+        - timestamp
+
+  parameters:
+    TransactionIdParam:
+      name: id
+      in: path
+      description: Уникальный идентификатор транзакции
+      required: true
+      schema:
+        type: integer
+        format: int64
+        minimum: 1
+        example: 1001
+
+    SellerIdParam:
+      name: sellerId
+      in: path
+      description: Уникальный идентификатор продавца
+      required: true
+      schema:
+        type: integer
+        format: int64
+        minimum: 1
+        example: 1
+
+    PageParam:
+      name: page
+      in: query
+      description: Номер страницы (начиная с 0)
+      required: false
+      schema:
+        type: integer
+        minimum: 0
+        maximum: 268435455
+        default: 0
+
+    SizeParam:
+      name: size
+      in: query
+      description: Количество элементов на странице
+      required: false
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 268435455
+        default: 5
+
+  examples:
+    TransactionResponseExample:
+      summary: Пример ответа с транзакцией
+      value:
+        id: 1001
+        amount: 150000
+        paymentType: "CARD"
+        transactionDate: "2024-01-15T10:35:00"
+        producer:
+          id: 1
+          name: "Иван Петров"
+
+    TransactionsListExample:
+      summary: Пример списка транзакций
+      value:
+        transactions:
+          - id: 1001
+            amount: 150000
+            paymentType: "CARD"
+            transactionDate: "2024-01-15T10:35:00"
+            producer:
+              id: 1
+              name: "Иван Петров"
+          - id: 1002
+            amount: 250000
+            paymentType: "TRANSFER"
+            transactionDate: "2024-01-16T14:20:00"
+            producer:
+              id: 2
+              name: "Елена Смирнова"
+        pagination:
+          page: 0
+          size: 5
+          count: 3
+
+    CreateTransactionExample:
+      summary: Пример запроса на создание транзакции
+      value:
+        amount: 150000
+        paymentType: "CARD"
+
+    CreateTransactionValidationErrors:
+      summary: Примеры ошибок валидации
+      value:
+        - field: "amount"
+          message: "Сумма должна быть положительным числом"
+        - field: "paymentType"
+          message: "Тип платежа не может быть пустым"
+
+    NotFoundErrorExample:
+      summary: Пример ошибки "Транзакция не найдена"
+      value:
+        message: "Transaction not found"
+        timestamp: "2024-01-15T10:30:00"
+
+    SellerNotFoundErrorExample:
+      summary: Пример ошибки "Продавец не найден"
+      value:
+        message: "Seller not found"
+        timestamp: "2024-01-15T10:30:00"
+
+    ValidationErrorExample:
+      summary: Пример ошибки валидации суммы
+      value:
+        message: "Сумма должна быть не менее 1"
+        timestamp: "2024-01-15T10:30:00"
+
+security: []
