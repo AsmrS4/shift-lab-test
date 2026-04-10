@@ -1,0 +1,505 @@
+openapi: 3.0.1
+info:
+  title: CRM Seller Management API
+  description: API для управления продавцами в CRM системе. Позволяет создавать, получать, обновлять и удалять информацию о продавцах.
+  version: 1.0.0
+
+servers:
+  - url: http://localhost:9000/api
+    description: хост для локальной разработки
+
+tags:
+  - name: Sellers
+    description: CRUD операции с продавцами
+
+paths:
+  /sellers:
+    get:
+      tags:
+        - Sellers
+      summary: Получение списка продавцов
+      description: Возвращает страницу с продавцами с поддержкой пагинации
+      operationId: retrieveSellers
+      parameters:
+        - name: page
+          in: query
+          description: Номер страницы (начиная с 0)
+          required: false
+          schema:
+            type: integer
+            minimum: 0
+            maximum: 268435455
+            default: 0
+            example: 0
+        - name: size
+          in: query
+          description: Количество элементов на странице
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 268435455
+            default: 5
+            example: 5
+      responses:
+        '200':
+          description: Успешный ответ со списком продавцов
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Sellers'
+              examples:
+                успешный-ответ:
+                  value:
+                    sellers:
+                      - id: 1
+                        name: "Иван Петров"
+                        contactInfo: "ivan.petrov@example.com"
+                        registrationDate: "2024-01-15T10:30:00"
+                        modifiedAt: "2024-01-15T10:30:00"
+                      - id: 2
+                        name: "Елена Смирнова"
+                        contactInfo: "elena.smirnova@example.com"
+                        registrationDate: "2024-01-16T14:20:00"
+                        modifiedAt: "2024-01-16T14:20:00"
+                    pagination:
+                      page: 0
+                      size: 5
+                      count: 3
+        '400':
+          description: Ошибка со стороны клиента
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                message: "Параметр page должен быть неотрицательным"
+                timestamp: "2024-01-15T10:30:00"
+        '500':
+          description: Ошибка сервера
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    post:
+      tags:
+        - Sellers
+      summary: Создание нового продавца
+      description: Создает нового продавца с указанными именем и контактной информацией
+      operationId: createSeller
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateSellerRequest'
+            examples:
+              валидный-запрос:
+                value:
+                  name: "Иван Петров"
+                  contactInfo: "ivan.petrov@example.com"
+      responses:
+        '201':
+          description: Продавец успешно создан
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SellerResponse'
+              example:
+                id: 1
+                name: "Иван Петров"
+                contactInfo: "ivan.petrov@example.com"
+                registrationDate: "2024-01-15T10:30:00"
+                modifiedAt: "2024-01-15T10:30:00"
+        '400':
+          description: Ошибка со стороны клиента
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                пустое-имя:
+                  value:
+                    message: "Имя не может быть пустым"
+                    timestamp: "2024-01-15T10:30:00"
+                короткое-имя:
+                  value:
+                    message: "Имя должно содержать от 3 до 100 символов"
+                    timestamp: "2024-01-15T10:30:00"
+                длинное-имя:
+                  value:
+                    message: "Имя должно содержать от 3 до 100 символов"
+                    timestamp: "2024-01-15T10:30:00"
+        '500':
+          description: Ошибка сервера
+
+  /sellers/{id}:
+    get:
+      tags:
+        - Sellers
+      summary: Получение информации о продавце
+      description: Возвращает детальную информацию о продавце по его id
+      operationId: retrieveSellerDetails
+      parameters:
+        - name: id
+          in: path
+          description: Уникальный идентификатор продавца
+          required: true
+          schema:
+            type: integer
+            format: int64
+            minimum: 1
+            example: 1
+      responses:
+        '200':
+          description: Успешный ответ с данными продавца
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SellerResponse'
+              example:
+                id: 1
+                name: "Иван Петров"
+                contactInfo: "ivan.petrov@example.com"
+                registrationDate: "2024-01-15T10:30:00"
+                modifiedAt: "2024-01-15T10:30:00"
+        '400':
+          description: Неверный id продавца
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                message: "id должен быть положительным числом"
+                timestamp: "2024-01-15T10:30:00"
+        '404':
+          description: Продавец не найден
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                не-существует:
+                  value:
+                    message: "Seller not found"
+                    timestamp: "2024-01-15T10:30:00"
+                удален:
+                  value:
+                    message: "Seller has been deleted"
+                    timestamp: "2024-01-15T10:30:00"
+        '500':
+          description: Ошибка сервера
+
+    put:
+      tags:
+        - Sellers
+      summary: Обновление информации о продавце
+      description: Обновляет имя и контактную информацию существующего продавца
+      operationId: updateSellerInfo
+      parameters:
+        - name: id
+          in: path
+          description: Уникальный идентификатор продавца
+          required: true
+          schema:
+            type: integer
+            format: int64
+            minimum: 1
+            example: 1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateSellerRequest'
+            examples:
+              полное-обновление:
+                value:
+                  name: "Иван Сидоров"
+                  contactInfo: "ivan.sidorov@example.com"
+      responses:
+        '200':
+          description: Информация о продавце успешно обновлена
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SellerResponse'
+              example:
+                id: 1
+                name: "Иван Сидоров"
+                contactInfo: "ivan.sidorov@example.com"
+                registrationDate: "2024-01-15T10:30:00"
+                modifiedAt: "2024-01-15T11:45:00"
+        '400':
+          description: Ошибка со стороны клиента
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Продавец не найден
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                message: "Seller not found"
+                timestamp: "2024-01-15T10:30:00"
+        '500':
+          description: Ошибка сервера
+
+    delete:
+      tags:
+        - Sellers
+      summary: Удаление продавца
+      description: Мягкое удаление продавца (устанавливает флаг active = false)
+      operationId: deleteSeller
+      parameters:
+        - name: id
+          in: path
+          description: Уникальный идентификатор продавца
+          required: true
+          schema:
+            type: integer
+            format: int64
+            minimum: 1
+            example: 1
+      responses:
+        '204':
+          description: Продавец успешно удален (не возвращает содержимого)
+        '404':
+          description: Продавец не найден
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                message: "Seller not found"
+                timestamp: "2024-01-15T10:30:00"
+        '500':
+          description: Ошибка сервера
+
+components:
+  schemas:
+    SellerResponse:
+      type: object
+      description: Объект ответа с данными продавца
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: Уникальный идентификатор продавца
+          example: 1
+          readOnly: true
+        name:
+          type: string
+          description: Полное имя продавца
+          minLength: 3
+          maxLength: 100
+          example: "Иван Петров"
+        contactInfo:
+          type: string
+          description: Контактная информация (email, телефон и т.д.)
+          minLength: 3
+          maxLength: 100
+          example: "ivan.petrov@example.com"
+        registrationDate:
+          type: string
+          format: date-time
+          description: Дата и время регистрации продавца
+          example: "2024-01-15T10:30:00"
+          readOnly: true
+        modifiedAt:
+          type: string
+          format: date-time
+          description: Дата и время последнего обновления
+          example: "2024-01-15T10:30:00"
+          readOnly: true
+      required:
+        - id
+        - name
+        - contactInfo
+        - registrationDate
+        - modifiedAt
+
+    Sellers:
+      type: object
+      description: Объект ответа со списком продавцов и пагинацией
+      properties:
+        sellers:
+          type: array
+          description: Список продавцов
+          items:
+            $ref: '#/components/schemas/SellerResponse'
+        pagination:
+          $ref: '#/components/schemas/Pagination'
+      required:
+        - sellers
+        - pagination
+
+    Pagination:
+      type: object
+      description: Информация о пагинации
+      properties:
+        page:
+          type: integer
+          description: Текущий номер страницы
+          minimum: 0
+          example: 0
+        size:
+          type: integer
+          description: Количество элементов на странице
+          minimum: 1
+          example: 5
+        count:
+          type: integer
+          description: Общее количество страниц
+          example: 3
+      required:
+        - page
+        - size
+        - count
+
+    CreateSellerRequest:
+      type: object
+      description: Запрос на создание нового продавца
+      properties:
+        name:
+          type: string
+          description: Полное имя продавца
+          minLength: 3
+          maxLength: 100
+          example: "Иван Петров"
+        contactInfo:
+          type: string
+          description: Контактная информация
+          minLength: 3
+          maxLength: 100
+          example: "ivan.petrov@example.com"
+      required:
+        - name
+        - contactInfo
+
+    UpdateSellerRequest:
+      type: object
+      description: Запрос на обновление информации о продавце
+      properties:
+        name:
+          type: string
+          description: Обновленное имя продавца
+          minLength: 3
+          maxLength: 100
+          example: "Иван Сидоров"
+        contactInfo:
+          type: string
+          description: Обновленная контактная информация
+          minLength: 3
+          maxLength: 100
+          example: "ivan.sidorov@example.com"
+      required:
+        - name
+        - contactInfo
+
+    ErrorResponse:
+      type: object
+      description: Объект ответа с ошибкой
+      properties:
+        message:
+          type: string
+          description: Текст ошибки
+          example: "Seller not found"
+        timestamp:
+          type: string
+          format: date-time
+          description: Время возникновения ошибки
+          example: "2024-01-15T10:30:00"
+      required:
+        - message
+        - timestamp
+
+    PaymentType:
+      type: string
+      description: Тип платежа
+      enum:
+        - CASH
+        - CARD
+        - TRANSFER
+      example: "CARD"
+
+  parameters:
+    PageParam:
+      name: page
+      in: query
+      description: Номер страницы (начиная с 0)
+      required: false
+      schema:
+        type: integer
+        minimum: 0
+        maximum: 268435455
+        default: 0
+    SizeParam:
+      name: size
+      in: query
+      description: Количество элементов на странице
+      required: false
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 268435455
+        default: 10
+
+  examples:
+    SellerResponseExample:
+      summary: Пример ответа с продавцом
+      value:
+        id: 1
+        name: "Иван Петров"
+        contactInfo: "ivan.petrov@example.com"
+        registrationDate: "2024-01-15T10:30:00"
+        modifiedAt: "2024-01-15T10:30:00"
+
+    SellersListExample:
+      summary: Пример списка продавцов
+      value:
+        sellers:
+          - id: 1
+            name: "Иван Петров"
+            contactInfo: "ivan.petrov@example.com"
+            registrationDate: "2024-01-15T10:30:00"
+            modifiedAt: "2024-01-15T10:30:00"
+          - id: 2
+            name: "Елена Смирнова"
+            contactInfo: "elena.smirnova@example.com"
+            registrationDate: "2024-01-16T14:20:00"
+            modifiedAt: "2024-01-16T14:20:00"
+        pagination:
+          page: 0
+          size: 5
+          count: 3
+
+    CreateSellerRequestExample:
+      summary: Пример запроса на создание продавца
+      value:
+        name: "Иван Петров"
+        contactInfo: "ivan.petrov@example.com"
+
+    UpdateSellerRequestExample:
+      summary: Пример запроса на обновление продавца
+      value:
+        name: "Иван Сидоров"
+        contactInfo: "ivan.sidorov@example.com"
+
+    NotFoundErrorExample:
+      summary: Пример ошибки "Продавец не найден"
+      value:
+        message: "Seller not found"
+        timestamp: "2024-01-15T10:30:00"
+
+    ValidationErrorExample:
+      summary: Пример ошибки валидации
+      value:
+        message: "Имя должно содержать от 3 до 100 символов"
+        timestamp: "2024-01-15T10:30:00"
+
+security: []

@@ -1,0 +1,472 @@
+openapi: 3.0.1
+info:
+  title: CRM Analytics API
+  description: API для аналитики продавцов в CRM системе. Позволяет получать информацию о продуктивных и непродуктивных продавцах за указанный период.
+  version: 1.0.0
+
+servers:
+  - url: http://localhost:9000/api
+    description: Локальный сервер разработки
+
+tags:
+  - name: Analytics
+    description: Аналитические операции с продавцами
+
+paths:
+  /analytic/sellers/productive:
+    get:
+      tags:
+        - Analytics
+      summary: Получение самого продуктивного продавца
+      description: Возвращает продавца с максимальной суммой транзакций за указанный период
+      operationId: retrieveMostProductiveSeller
+      parameters:
+        - name: dateFrom
+          in: query
+          description: Начальная дата периода (включительно)
+          required: true
+          schema:
+            type: string
+            format: date
+            example: "2024-01-01"
+        - name: dateTo
+          in: query
+          description: Конечная дата периода (включительно)
+          required: true
+          schema:
+            type: string
+            format: date
+            example: "2024-12-31"
+      responses:
+        '200':
+          description: Успешный ответ с информацией о самом продуктивном продавце
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SellerStatisticResponse'
+              examples:
+                найден-продавец:
+                  value:
+                    seller:
+                      id: 1
+                      name: "Иван Петров"
+                      contactInfo: "ivan.petrov@example.com"
+                      registrationDate: "2024-01-15T10:30:00"
+                      modifiedAt: "2024-01-15T10:30:00"
+                    totalAmount: 1500000
+                нет-транзакций:
+                  value:
+                    seller: null
+                    totalAmount: 0
+        '400':
+          description: Неверные параметры периода
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                null-параметры:
+                  value:
+                    message: "Даты периода не могут быть null"
+                    timestamp: "2024-01-15T10:30:00"
+                некорректный-период:
+                  value:
+                    message: "Дата начала не может быть позже даты окончания"
+                    timestamp: "2024-01-15T10:30:00"
+                неверный-формат:
+                  value:
+                    message: "Неверный формат даты. Используйте YYYY-MM-DD"
+                    timestamp: "2024-01-15T10:30:00"
+        '500':
+          description: Ошибка сервера
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /analytic/sellers/non-productive:
+    get:
+      tags:
+        - Analytics
+      summary: Получение списка непродуктивных продавцов
+      description: Возвращает список продавцов с суммой транзакций ниже указанного порога за период с поддержкой пагинации
+      operationId: retrieveUnProductiveSellers
+      parameters:
+        - name: dateFrom
+          in: query
+          description: Начальная дата периода (включительно)
+          required: true
+          schema:
+            type: string
+            format: date
+            example: "2024-01-01"
+        - name: dateTo
+          in: query
+          description: Конечная дата периода (включительно)
+          required: true
+          schema:
+            type: string
+            format: date
+            example: "2024-12-31"
+        - name: amount
+          in: query
+          description: Пороговая сумма дохода (продавцы с доходом ниже этого значения)
+          required: true
+          schema:
+            type: integer
+            format: int64
+            minimum: 0
+            example: 500000
+        - name: page
+          in: query
+          description: Номер страницы (начиная с 0)
+          required: false
+          schema:
+            type: integer
+            minimum: 0
+            maximum: 268435455
+            default: 0
+            example: 0
+        - name: size
+          in: query
+          description: Количество элементов на странице
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 268435455
+            default: 5
+            example: 5
+      responses:
+        '200':
+          description: Успешный ответ со списком непродуктивных продавцов
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SellerStatisticList'
+              examples:
+                список-непродуктивных:
+                  value:
+                    statistic:
+                      - seller:
+                          id: 5
+                          name: "Анна Смирнова"
+                          contactInfo: "anna.smirnova@example.com"
+                          registrationDate: "2024-02-10T11:20:00"
+                          modifiedAt: "2024-02-10T11:20:00"
+                        totalAmount: 250000
+                      - seller:
+                          id: 7
+                          name: "Дмитрий Козлов"
+                          contactInfo: "dmitry.kozlov@example.com"
+                          registrationDate: "2024-03-05T09:45:00"
+                          modifiedAt: "2024-03-05T09:45:00"
+                        totalAmount: 100000
+                    pagination:
+                      size: 5
+                      count: 3
+                      page: 0
+                пустой-список:
+                  value:
+                    statistic: []
+                    pagination:
+                      size: 5
+                      count: 0
+                      page: 0
+        '400':
+          description: Неверные параметры запроса
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                null-параметры:
+                  value:
+                    message: "Даты периода не могут быть null"
+                    timestamp: "2024-01-15T10:30:00"
+                некорректный-период:
+                  value:
+                    message: "Дата начала не может быть позже даты окончания"
+                    timestamp: "2024-01-15T10:30:00"
+                неверная-сумма:
+                  value:
+                    message: "Сумма должна быть неотрицательным числом"
+                    timestamp: "2024-01-15T10:30:00"
+                неверный-формат-даты:
+                  value:
+                    message: "Неверный формат даты. Используйте YYYY-MM-DD"
+                    timestamp: "2024-01-15T10:30:00"
+        '500':
+          description: Ошибка сервера
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+components:
+  schemas:
+    SellerStatisticResponse:
+      type: object
+      description: Объект ответа со статистикой продавца
+      properties:
+        seller:
+          $ref: '#/components/schemas/SellerResponse'
+          description: Информация о продавце (может быть null, если транзакций нет)
+        totalAmount:
+          type: integer
+          format: int64
+          description: Общая сумма транзакций продавца за период
+          minimum: 0
+          example: 1500000
+      required:
+        - seller
+        - totalAmount
+
+    SellerResponse:
+      type: object
+      description: Детальная информация о продавце
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: Уникальный идентификатор продавца
+          example: 1
+          readOnly: true
+        name:
+          type: string
+          description: Полное имя продавца
+          minLength: 3
+          maxLength: 100
+          example: "Иван Петров"
+        contactInfo:
+          type: string
+          description: Контактная информация продавца
+          minLength: 3
+          maxLength: 100
+          example: "ivan.petrov@example.com"
+        registrationDate:
+          type: string
+          format: date-time
+          description: Дата и время регистрации продавца
+          example: "2024-01-15T10:30:00"
+          readOnly: true
+        modifiedAt:
+          type: string
+          format: date-time
+          description: Дата и время последнего обновления информации
+          example: "2024-01-15T10:30:00"
+          readOnly: true
+      required:
+        - id
+        - name
+        - contactInfo
+        - registrationDate
+        - modifiedAt
+
+    SellerStatisticList:
+      type: object
+      description: Объект ответа со списком статистики продавцов и пагинацией
+      properties:
+        statistic:
+          type: array
+          description: Список статистики продавцов
+          items:
+            $ref: '#/components/schemas/SellerStatisticResponse'
+        pagination:
+          $ref: '#/components/schemas/Pagination'
+      required:
+        - statistic
+        - pagination
+
+    Period:
+      type: object
+      description: Период для анализа
+      properties:
+        dateFrom:
+          type: string
+          format: date
+          description: Начальная дата периода
+          example: "2024-01-01"
+        dateTo:
+          type: string
+          format: date
+          description: Конечная дата периода
+          example: "2024-12-31"
+      required:
+        - dateFrom
+        - dateTo
+
+    Pagination:
+      type: object
+      description: Информация о пагинации
+      properties:
+        size:
+          type: integer
+          description: Размер страницы (количество элементов)
+          minimum: 1
+          example: 5
+        count:
+          type: integer
+          description: Общее количество страниц
+          minimum: 0
+          example: 3
+        page:
+          type: integer
+          description: Номер текущей страницы
+          minimum: 0
+          example: 0
+      required:
+        - size
+        - count
+        - page
+
+    PaginationParams:
+      type: object
+      description: Параметры пагинации для запроса
+      properties:
+        page:
+          type: integer
+          description: Номер страницы (начиная с 0)
+          minimum: 0
+          maximum: 268435455
+          default: 0
+          example: 0
+        size:
+          type: integer
+          description: Количество элементов на странице
+          minimum: 1
+          maximum: 268435455
+          default: 5
+          example: 5
+
+    ErrorResponse:
+      type: object
+      description: Объект ответа с ошибкой
+      properties:
+        message:
+          type: string
+          description: Текст ошибки
+          example: "Invalid period: start date must be before end date"
+        timestamp:
+          type: string
+          format: date-time
+          description: Время возникновения ошибки
+          example: "2024-01-15T10:30:00"
+      required:
+        - message
+        - timestamp
+
+  parameters:
+    DateFromParam:
+      name: dateFrom
+      in: query
+      description: Начальная дата периода (включительно)
+      required: true
+      schema:
+        type: string
+        format: date
+        example: "2024-01-01"
+
+    DateToParam:
+      name: dateTo
+      in: query
+      description: Конечная дата периода (включительно)
+      required: true
+      schema:
+        type: string
+        format: date
+        example: "2024-12-31"
+
+    AmountThresholdParam:
+      name: amount
+      in: query
+      description: Пороговая сумма дохода
+      required: true
+      schema:
+        type: integer
+        format: int64
+        minimum: 0
+        example: 500000
+
+    PageParam:
+      name: page
+      in: query
+      description: Номер страницы (начиная с 0)
+      required: false
+      schema:
+        type: integer
+        minimum: 0
+        maximum: 268435455
+        default: 0
+
+    SizeParam:
+      name: size
+      in: query
+      description: Количество элементов на странице
+      required: false
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 268435455
+        default: 5
+
+  examples:
+    ProductiveSellerExample:
+      summary: Пример успешного ответа с продуктивным продавцом
+      value:
+        seller:
+          id: 1
+          name: "Иван Петров"
+          contactInfo: "ivan.petrov@example.com"
+          registrationDate: "2024-01-15T10:30:00"
+          modifiedAt: "2024-01-15T10:30:00"
+        totalAmount: 1500000
+
+    NoTransactionsExample:
+      summary: Пример ответа когда транзакций нет
+      value:
+        seller: null
+        totalAmount: 0
+
+    UnproductiveSellersExample:
+      summary: Пример списка непродуктивных продавцов
+      value:
+        statistic:
+          - seller:
+              id: 5
+              name: "Анна Смирнова"
+              contactInfo: "anna.smirnova@example.com"
+              registrationDate: "2024-02-10T11:20:00"
+              modifiedAt: "2024-02-10T11:20:00"
+            totalAmount: 250000
+          - seller:
+              id: 7
+              name: "Дмитрий Козлов"
+              contactInfo: "dmitry.kozlov@example.com"
+              registrationDate: "2024-03-05T09:45:00"
+              modifiedAt: "2024-03-05T09:45:00"
+            totalAmount: 100000
+        pagination:
+          size: 10
+          count: 2
+          page: 0
+
+    PeriodErrorExample:
+      summary: Пример ошибки некорректного периода
+      value:
+        message: "Дата начала не может быть позже даты окончания"
+        timestamp: "2024-01-15T10:30:00"
+
+    NullPeriodErrorExample:
+      summary: Пример ошибки с null параметрами периода
+      value:
+        message: "Даты периода не могут быть null"
+        timestamp: "2024-01-15T10:30:00"
+
+    InvalidAmountErrorExample:
+      summary: Пример ошибки с неверной суммой
+      value:
+        message: "Сумма должна быть неотрицательным числом"
+        timestamp: "2024-01-15T10:30:00"
+
+security: []
